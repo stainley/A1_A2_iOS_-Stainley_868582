@@ -34,6 +34,7 @@ class ViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(addAnnotationByTapping))
         
         map.addGestureRecognizer(tapGesture)
+        map.delegate = self
     }
 
     
@@ -73,8 +74,8 @@ class ViewController: UIViewController {
                             }
                             
                             if self.numbersOfAnnotations == 2 {
-                                //self.addPolyline()
-                                //self.addPolygon()
+                                self.addPolyline()
+                                self.addPolygon()
                             }
                         }
                     }
@@ -95,6 +96,40 @@ class ViewController: UIViewController {
         let region = MKCoordinateRegion(center: location, span: span)
         
         map.setRegion(region, animated: true)
+    }
+    
+    //MARK: Add Polyne
+    func addPolyline() {
+        //directionButton.isHidden = false
+        var myAnnotations: [CLLocationCoordinate2D] = [CLLocationCoordinate2D]()
+        for mapAnnotation in map.annotations {
+    
+            myAnnotations.append(mapAnnotation.coordinate)
+        }
+        
+        myAnnotations.append(myAnnotations[0])
+        
+        let polyline = MKPolyline(coordinates: myAnnotations, count: myAnnotations.count)
+        map.addOverlay(polyline, level: .aboveRoads)
+       
+        //showDistanceBetweenTwoPoint()
+    }
+    
+    //MARK: Add Polygon
+    func addPolygon() {
+
+        var myAnnotations: [CLLocationCoordinate2D] = [CLLocationCoordinate2D]()
+   
+        for anno in map.annotations{
+            if anno.title == "My Location" {
+                continue
+            }
+            myAnnotations.append(anno.coordinate)
+        }
+
+        let polygon = MKPolygon(coordinates: myAnnotations, count: myAnnotations.count)
+        
+        map.addOverlay(polygon)
     }
 
 }
@@ -117,4 +152,19 @@ extension ViewController: CLLocationManagerDelegate {
 
 extension ViewController: MKMapViewDelegate {
     
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+       
+        if overlay is MKPolyline {
+            
+            let renderer = MKPolylineRenderer(overlay: overlay)
+            renderer.strokeColor = .green
+            renderer.lineWidth = 5
+            return renderer
+        } else if overlay is MKPolygon {
+            let renderer = MKPolygonRenderer(overlay: overlay)
+            renderer.fillColor = .red.withAlphaComponent(0.5)
+            return renderer
+        }
+        return MKOverlayRenderer()
+    }
 }
