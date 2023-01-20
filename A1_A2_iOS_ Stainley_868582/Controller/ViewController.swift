@@ -16,6 +16,7 @@ class ViewController: UIViewController {
     var locationManager = CLLocationManager()
     //var places: [CityAnnotation] = []
     var numberTap: Int = 0
+    var titleMarker: [String] = ["A", "B", "C"]
     var numbersOfAnnotations: Int = 0
     
     override func viewDidLoad() {
@@ -31,6 +32,8 @@ class ViewController: UIViewController {
         locationManager.startUpdatingLocation()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(addAnnotationByTapping))
+        
+        map.addGestureRecognizer(tapGesture)
     }
 
     
@@ -41,7 +44,43 @@ class ViewController: UIViewController {
         let coordinate = map.convert(touchPoint, toCoordinateFrom: map)
         
         
-        
+        CLGeocoder().reverseGeocodeLocation(CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude), completionHandler:  {(placemarks, error) in
+            
+            if error != nil {
+                print(error!)
+            } else {
+                DispatchQueue.main.async {
+                    if let placeMark = placemarks?[0] {
+                        
+                        if placeMark.locality != nil {
+                            
+                            let place = CityAnnotation(city: placeMark.locality!, coordinate: coordinate)
+                            
+                            switch  self.numbersOfAnnotations {
+                                case 0:
+                                    place.title = "A"
+                                case 1:
+                                    place.title = "B"
+                                case 2:
+                                    place.title = "C"
+                                default:
+                                    place.title = ""
+                            }
+                            
+                            // Add up to 3 Annotations on the map
+                            if self.numbersOfAnnotations <= 2 {
+                                self.map.addAnnotation(place)
+                            }
+                            
+                            if self.numbersOfAnnotations == 2 {
+                                //self.addPolyline()
+                                //self.addPolygon()
+                            }
+                        }
+                    }
+                }
+            }
+        })
         
     }
     

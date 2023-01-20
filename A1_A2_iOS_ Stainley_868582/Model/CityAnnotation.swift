@@ -10,11 +10,15 @@ import MapKit
 
 class CityAnnotation: NSObject, MKAnnotation {
     var title: String?
+    var city: String?
     var coordinate: CLLocationCoordinate2D
     
-    init(title: String? = nil, coordinate: CLLocationCoordinate2D) {
-        self.title = title
+    init(city: String? = nil, coordinate: CLLocationCoordinate2D) {
+        self.city = city
         self.coordinate = coordinate
     }
     
+    func setTitle(title: String) {
+        self.title = title
+    }
 }
