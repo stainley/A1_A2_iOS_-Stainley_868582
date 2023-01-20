@@ -35,9 +35,9 @@ class ViewController: UIViewController {
         
         map.addGestureRecognizer(tapGesture)
         map.delegate = self
+        
     }
 
-    
     @objc func addAnnotationByTapping(gesture: UIGestureRecognizer) {
         numbersOfAnnotations = map.annotations.count
         
@@ -112,7 +112,7 @@ class ViewController: UIViewController {
         let polyline = MKPolyline(coordinates: myAnnotations, count: myAnnotations.count)
         map.addOverlay(polyline, level: .aboveRoads)
        
-        //showDistanceBetweenTwoPoint()
+        showDistanceBetweenTwoPoint()
     }
     
     //MARK: Add Polygon
@@ -132,6 +132,47 @@ class ViewController: UIViewController {
         map.addOverlay(polygon)
     }
 
+    private func showDistanceBetweenTwoPoint() {
+        var nextIndex = 0
+        
+        for index in 0...2{
+            if index == 2 {
+                nextIndex = 0
+            } else {
+                nextIndex = index + 1
+            }
+
+            let distance: Double = getDistance(from: map.annotations[index].coordinate, to:  map.annotations[nextIndex].coordinate)
+            
+            let pointA: CGPoint = map.convert(map.annotations[index].coordinate, toPointTo: map)
+            let pointB: CGPoint = map.convert(map.annotations[nextIndex].coordinate, toPointTo: map)
+        
+            print(pointA)
+            print(pointB)
+            /*
+            let labelDistance = UILabel(frame: CGRect(x: 0, y: 0, width: 50, height: 18))
+
+            labelDistance.textAlignment = NSTextAlignment.center
+            labelDistance.text = "\(String.init(format: "%2.f",  round(distance * 0.001))) km"
+            labelDistance.textColor = .purple
+            labelDistance.backgroundColor = .white
+            labelDistance.center = CGPoint(x: (pointA.x + pointB.x) / 2, y: (pointA.y + pointB.y) / 2)
+            
+            distanceLabels.append(labelDistance)
+             */
+        }
+        
+        /*for label in distanceLabels {
+            map.addSubview(label)
+        }*/
+    }
+    
+    func getDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> CLLocationDistance {
+        let from = CLLocation(latitude: from.latitude, longitude: from.longitude)
+        let to = CLLocation(latitude: to.latitude, longitude: to.longitude)
+        
+        return from.distance(from: to)
+    }
 }
 
 
@@ -152,10 +193,46 @@ extension ViewController: CLLocationManagerDelegate {
 
 extension ViewController: MKMapViewDelegate {
     
+    func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
+        if annotation is MKUserLocation {
+            return nil
+        }
+        
+        var annotationView: MKAnnotationView?
+        if let annotation = annotation as? CityAnnotation {
+            annotationView = setupCustomAnnotationView(for: annotation, on: map)
+        }
+
+        return annotationView
+    }
+    
+    private func setupCustomAnnotationView(for annotation: CityAnnotation, on mapView: MKMapView) -> MKAnnotationView {
+
+        let flagAnnotationView = MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "custom")
+        flagAnnotationView.canShowCallout = true
+   
+        // Provide the left image icon for the annotation.
+        flagAnnotationView.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
+        
+        return flagAnnotationView
+    }
+    
+    func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
+        
+        let cityAnnotation = view.annotation as! CityAnnotation
+        let placeName = cityAnnotation.city
+        let placeInfo = cityAnnotation.distance
+
+        let ac = UIAlertController(title: placeName, message: placeInfo, preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "OK", style: .default))
+            present(ac, animated: true)
+    }
+    
+    
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-       
+
         if overlay is MKPolyline {
-            
+        
             let renderer = MKPolylineRenderer(overlay: overlay)
             renderer.strokeColor = .green
             renderer.lineWidth = 5

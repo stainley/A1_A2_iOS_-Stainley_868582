@@ -11,6 +11,7 @@ import MapKit
 class CityAnnotation: NSObject, MKAnnotation {
     var title: String?
     var city: String?
+    var distance: String?
     var coordinate: CLLocationCoordinate2D
     
     init(city: String? = nil, coordinate: CLLocationCoordinate2D) {
