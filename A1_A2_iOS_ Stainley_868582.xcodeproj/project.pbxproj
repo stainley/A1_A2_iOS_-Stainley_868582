@@ -56,15 +56,39 @@
 		ADB0D175297B445D00A9AF78 /* A1_A2_iOS_ Stainley_868582 */ = {
 			isa = PBXGroup;
 			children = (
+				ADB0D18A297B446400A9AF78 /* Model */,
+				ADB0D18B297B446B00A9AF78 /* View */,
+				ADB0D18C297B447000A9AF78 /* Controller */,
 				ADB0D176297B445D00A9AF78 /* AppDelegate.swift */,
 				ADB0D178297B445D00A9AF78 /* SceneDelegate.swift */,
-				ADB0D17A297B445D00A9AF78 /* ViewController.swift */,
-				ADB0D17C297B445D00A9AF78 /* Main.storyboard */,
 				ADB0D17F297B445E00A9AF78 /* Assets.xcassets */,
 				ADB0D181297B445E00A9AF78 /* LaunchScreen.storyboard */,
 				ADB0D184297B445E00A9AF78 /* Info.plist */,
 			);
 			path = "A1_A2_iOS_ Stainley_868582";
+			sourceTree = "<group>";
+		};
+		ADB0D18A297B446400A9AF78 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		ADB0D18B297B446B00A9AF78 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				ADB0D17C297B445D00A9AF78 /* Main.storyboard */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		ADB0D18C297B447000A9AF78 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				ADB0D17A297B445D00A9AF78 /* ViewController.swift */,
+			);
+			path = Controller;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
