@@ -33,18 +33,21 @@ class ViewController: UIViewController {
         locationManager.startUpdatingLocation()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(addAnnotationByTapping))
+        tapGesture.numberOfTapsRequired = 2
         map.addGestureRecognizer(tapGesture)
         
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(removeAnnotation))
         longPress.delaysTouchesBegan = true
         map.addGestureRecognizer(longPress)
-        
-        
+                
         map.delegate = self
         
     }
 
     func addMyAnnotation(coordinate: CLLocationCoordinate2D) {
+        self.numberTap += 1
+
+        
         
         CLGeocoder().reverseGeocodeLocation(CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude), completionHandler:  {(placemarks, error) in
             
@@ -55,6 +58,21 @@ class ViewController: UIViewController {
                     if let placeMark = placemarks?[0] {
                         
                         if placeMark.locality != nil {
+                            
+                            if self.numberTap == 4 {
+                                for annotation in self.map.annotations {
+                                    
+                                    if let annotation = annotation as? CityAnnotation {
+                                        if annotation.city != placeMark.locality {
+                                            self.map.removeAnnotation(annotation)
+                                            self.removeOverlays()
+                                            self.numberTap = 1
+                                            self.numbersOfAnnotations = 1
+                                        }
+                                    }
+                                }
+                            }
+                            
                             
                             let place = CityAnnotation(city: placeMark.locality!)
                             place.coordinate = coordinate
@@ -71,9 +89,9 @@ class ViewController: UIViewController {
                             
                             // Add up to 3 Annotations on the map
                             if self.numbersOfAnnotations <= 4 {
-                                
-                                self.map.addAnnotation(place)
-                                self.numberTap += 1
+                                if self.numbersOfAnnotations <= 3 {
+                                    self.map.addAnnotation(place)
+                                }
                             }
                             
                             if self.numbersOfAnnotations == 3 {
@@ -379,7 +397,7 @@ extension ViewController: MKMapViewDelegate {
         
         let cityAnnotation = view.annotation as! CityAnnotation
         let placeName = cityAnnotation.city
-        let placeInfo = "\(displayDistanceLocationAndMarker(annotations: mapView.selectedAnnotations))"
+        let placeInfo = "\(String(format: "%.0f",displayDistanceLocationAndMarker(annotations: mapView.selectedAnnotations))) M"
 
         let ac = UIAlertController(title: placeName, message: placeInfo, preferredStyle: .alert)
             ac.addAction(UIAlertAction(title: "OK", style: .default))
