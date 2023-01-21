@@ -33,8 +33,13 @@ class ViewController: UIViewController {
         locationManager.startUpdatingLocation()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(addAnnotationByTapping))
-        
         map.addGestureRecognizer(tapGesture)
+        
+        let longPress = UILongPressGestureRecognizer(target: self, action: #selector(removeAnnotation))
+        longPress.delaysTouchesBegan = true
+        map.addGestureRecognizer(longPress)
+        
+        
         map.delegate = self
         
     }
@@ -133,6 +138,57 @@ class ViewController: UIViewController {
         let polygon = MKPolygon(coordinates: myAnnotations, count: myAnnotations.count)
         
         map.addOverlay(polygon)
+    }
+    
+    // MARK: Remove Annotation by City name
+    @objc func removeAnnotation(point: UITapGestureRecognizer) {
+      
+        let pointTouched: CGPoint = point.location(in: map)
+        
+        let coordinate =  map.convert(pointTouched, toCoordinateFrom: map)
+        let location: CLLocationCoordinate2D = coordinate
+          
+        // from coordinate get city name
+        CLGeocoder().reverseGeocodeLocation(CLLocation(latitude: location.latitude, longitude: location.longitude), completionHandler: { (placemarks, error) in
+            if error != nil {
+                print(error!)
+            } else {
+                DispatchQueue.main.async {
+                    if let placeMark = placemarks?[0] {
+                        
+                        if placeMark.locality != nil {
+                            
+                            for myAnnotation in self.map.annotations{
+                                
+                                if let annotation: CityAnnotation = myAnnotation as? CityAnnotation {
+                                    if annotation.city == placeMark.locality {
+                                        self.removeOverlays()
+                                        self.map.removeAnnotation(myAnnotation)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
+    
+    func removeOverlays() {
+        //directionButton.isHidden = true
+        remoteDistanceLabel()
+        
+        for polygon in map.overlays {
+            map.removeOverlay(polygon)
+        }
+    }
+    
+    private func remoteDistanceLabel() {
+        for label in distanceLabels {
+            label.removeFromSuperview()
+        }
+        
+        distanceLabels = []
     }
     
     private func displayDistanceLocationAndMarker(nextIndex: [MKAnnotation]) -> CLLocationDistance {
