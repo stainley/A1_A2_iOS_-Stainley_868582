@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 
 class ViewController: UIViewController {
-
+    @IBOutlet weak var searchInputText: UITextField!
     @IBOutlet weak var map: MKMapView!
     var location: CLLocationManager!
     var locationManager = CLLocationManager()
@@ -44,12 +44,7 @@ class ViewController: UIViewController {
         
     }
 
-    @objc func addAnnotationByTapping(gesture: UIGestureRecognizer) {
-        numbersOfAnnotations = map.annotations.count
-        
-        let touchPoint = gesture.location(in: map)
-        let coordinate = map.convert(touchPoint, toCoordinateFrom: map)
-        
+    func addMyAnnotation(coordinate: CLLocationCoordinate2D) {
         
         CLGeocoder().reverseGeocodeLocation(CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude), completionHandler:  {(placemarks, error) in
             
@@ -71,11 +66,16 @@ class ViewController: UIViewController {
                                 case 3:
                                     place.title = "C"
                                 default:
-                                    place.title = ""
+                                    place.title = "A"
                             }
                             
                             // Add up to 3 Annotations on the map
-                            if self.numbersOfAnnotations <= 3 {
+                            if self.numbersOfAnnotations <= 4 {
+                                
+                                if self.numberTap == 3 {
+                                    
+                                }
+                                
                                 self.map.addAnnotation(place)
                                 self.numberTap += 1
                             }
@@ -89,11 +89,23 @@ class ViewController: UIViewController {
                 }
             }
         })
+    }
+    
+    @objc func addAnnotationByTapping(gesture: UIGestureRecognizer) {
+        numbersOfAnnotations = map.annotations.count
+        print(numberTap)
+        let touchPoint = gesture.location(in: map)
+        let coordinate = map.convert(touchPoint, toCoordinateFrom: map)
+        
+        addMyAnnotation(coordinate: coordinate)
         
     }
     
     //MARK: Display my current location on map
-    func displayLocation(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
+    func displayLocation(latitude: CLLocationDegrees,
+                         longitude: CLLocationDegrees,
+                         title: String,
+                         subtitle: String) {
         
         let latitudeDelta: CLLocationDegrees = 0.7
         let longitudeDelta: CLLocationDegrees = 0.7
@@ -103,6 +115,8 @@ class ViewController: UIViewController {
         let region = MKCoordinateRegion(center: location, span: span)
         
         map.setRegion(region, animated: true)
+        
+        
     }
     
     //MARK: Add Polyne
@@ -174,6 +188,78 @@ class ViewController: UIViewController {
         })
     }
     
+    @IBAction func searchAddress(_ sender: UIButton) {
+     
+        let searchRequest = MKLocalSearch.Request()
+        searchRequest.naturalLanguageQuery = searchInputText.text
+        
+        let search = MKLocalSearch(request: searchRequest)
+        search.start { (response, error) in
+                guard let coordinate = response?.mapItems[0].placemark.coordinate else {
+                    return
+                }
+
+                guard let name = response?.mapItems[0].name else {
+                    return
+                }
+
+                let lat = coordinate.latitude
+                let lon = coordinate.longitude
+
+                self.addMyAnnotation(coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon))
+                self.searchInputText.text = ""
+            }
+    }
+    
+    @IBAction func drawRoute(sender: UIButton) {
+        map.removeOverlays(map.overlays)
+        remoteDistanceLabel()
+
+        var nextIndex = 0
+        for index in 0...3 {
+            if index == 3 {
+                nextIndex = 1
+            } else {
+                nextIndex = index + 1
+            }
+            
+            for (index, anno) in map.annotations.enumerated() {
+                print("\(index) \(anno.title)")
+            }
+            
+            if map.annotations[index].title != "My Location" || map.annotations[index].title != "My Location" {
+                let source = MKPlacemark(coordinate: map.annotations[index].coordinate)
+                let destination = MKPlacemark(coordinate: map.annotations[nextIndex].coordinate)
+                
+                let directionRequest = MKDirections.Request()
+                
+                directionRequest.source = MKMapItem(placemark: source)
+                directionRequest.destination = MKMapItem(placemark: destination)
+                
+                directionRequest.transportType = .automobile
+                
+                let directions = MKDirections(request: directionRequest)
+                directions.calculate(completionHandler: { (response, error) in
+                    guard let directionResponse = response else {
+                        return
+                    }
+                    
+                    let route = directionResponse.routes[0]
+                    self.map.addOverlay(route.polyline, level: .aboveRoads)
+                    
+                    let rect = route.polyline.boundingMapRect
+                    self.map.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 100, left: 100, bottom: 100, right: 100), animated: true)
+                                    
+                })
+            } else {
+                print(map.annotations[index].title)
+            }
+            
+          
+        }
+                
+    }
+    
     func removeOverlays() {
         //directionButton.isHidden = true
         remoteDistanceLabel()
@@ -192,7 +278,6 @@ class ViewController: UIViewController {
     }
     
     private func displayDistanceLocationAndMarker(nextIndex: [MKAnnotation]) -> CLLocationDistance {
-        
 
         for (_, annotation) in nextIndex.enumerated() {
             let distance =  getDistance(from: map.annotations[0].coordinate, to:  annotation)
@@ -231,32 +316,7 @@ class ViewController: UIViewController {
             
             distanceLabels.append(labelDistance)
         }
-        /*
-        for index in 1...3{
-            if index == 3 {
-                nextIndex = 1
-            } else {
-                nextIndex = index + 1
-            }
-            
-
-            //let distance: Double = getDistance(from: map.annotations[index].coordinate, to:  map.annotations[nextIndex].coordinate)
-            
-            let pointA: CGPoint = map.convert(map.annotations[index].coordinate, toPointTo: map)
-            let pointB: CGPoint = map.convert(map.annotations[nextIndex].coordinate, toPointTo: map)
-            
-            let labelDistance = UILabel(frame: CGRect(x: 0, y: 0, width: 50, height: 18))
-
-            labelDistance.textAlignment = NSTextAlignment.center
-            labelDistance.text = "\(String.init(format: "%2.f",  round(distance * 0.001))) km"
-            labelDistance.textColor = .purple
-            labelDistance.backgroundColor = .white
-            labelDistance.center = CGPoint(x: (pointA.x + pointB.x) / 2, y: (pointA.y + pointB.y) / 2)
-            
-            distanceLabels.append(labelDistance)
-             
-        }
-        */
+      
         for label in distanceLabels {
             map.addSubview(label)
         }
@@ -288,7 +348,7 @@ extension ViewController: CLLocationManagerDelegate {
         let latitude = userLocation.coordinate.latitude
         let longitude = userLocation.coordinate.longitude
         
-        displayLocation(latitude: latitude, longitude: longitude)
+        displayLocation(latitude: latitude, longitude: longitude, title: "My Location", subtitle:  "I'm  here")
     }
 }
 

@@ -18,29 +18,64 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1Ui-yv-OGN">
-                                <rect key="frame" x="0.0" y="59" width="393" height="759"/>
+                                <rect key="frame" x="0.0" y="119" width="393" height="699"/>
                                 <standardMapConfiguration key="preferredConfiguration"/>
                             </mapView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pTZ-q0-x5X">
+                                <rect key="frame" x="321" y="732" width="56" height="46"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="46" id="Lfx-nD-AhF"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" image="route"/>
+                                <connections>
+                                    <action selector="drawRouteWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="yuk-q0-ayW"/>
+                                </connections>
+                            </button>
+                            <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Sx4-xj-Sdr">
+                                <rect key="frame" x="8" y="78" width="291" height="34"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="AHH-6R-Yfi">
+                                <rect key="frame" x="307" y="77" width="78" height="35"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Search"/>
+                                <connections>
+                                    <action selector="searchAddress:" destination="BYZ-38-t0r" eventType="touchUpInside" id="pqL-r8-cpC"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="1Ui-yv-OGN" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="5lP-Jk-rLB"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="1Ui-yv-OGN" secondAttribute="bottom" id="NLj-TA-BaC"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="1Ui-yv-OGN" secondAttribute="trailing" id="Qtm-2b-8Rs"/>
-                            <constraint firstItem="1Ui-yv-OGN" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="c7C-Y6-hGg"/>
+                            <constraint firstItem="AHH-6R-Yfi" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="18" id="9aX-Zx-MZI"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="AHH-6R-Yfi" secondAttribute="trailing" constant="8" id="D4h-qg-0a2"/>
+                            <constraint firstItem="Sx4-xj-Sdr" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="8" id="J0b-2t-wC1"/>
+                            <constraint firstItem="Sx4-xj-Sdr" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="19" id="QLb-dj-zqL"/>
+                            <constraint firstItem="1Ui-yv-OGN" firstAttribute="top" secondItem="AHH-6R-Yfi" secondAttribute="bottom" constant="7" id="Vte-9B-N1A"/>
+                            <constraint firstItem="AHH-6R-Yfi" firstAttribute="leading" secondItem="Sx4-xj-Sdr" secondAttribute="trailing" constant="8" id="cji-Lv-Ein"/>
+                            <constraint firstItem="pTZ-q0-x5X" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="6Tk-OE-BBY" secondAttribute="leading" symbolic="YES" id="gOm-0t-9Bs"/>
+                            <constraint firstItem="pTZ-q0-x5X" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="nt3-5h-CIn"/>
+                            <constraint firstItem="Sx4-xj-Sdr" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="8" id="piz-p4-rxN"/>
+                            <constraint firstItem="1Ui-yv-OGN" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="qdP-J6-QuA"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="pTZ-q0-x5X" secondAttribute="bottom" constant="40" id="rCL-Bg-eGI"/>
+                            <constraint firstItem="1Ui-yv-OGN" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="sDx-fx-4W8"/>
+                            <constraint firstItem="1Ui-yv-OGN" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="wRL-xa-2yG"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="map" destination="1Ui-yv-OGN" id="p4v-Is-sNl"/>
+                        <outlet property="searchInputText" destination="Sx4-xj-Sdr" id="trJ-ZT-vog"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="48" y="-2"/>
+            <point key="canvasLocation" x="46.564885496183201" y="-2.1126760563380285"/>
         </scene>
     </scenes>
     <resources>
+        <image name="route" width="32" height="32"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
