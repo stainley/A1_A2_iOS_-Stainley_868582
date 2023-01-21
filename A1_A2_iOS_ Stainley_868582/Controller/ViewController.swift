@@ -18,13 +18,14 @@ class ViewController: UIViewController {
     var numberTap: Int = 0
     var titleMarker: [String] = ["A", "B", "C"]
     var numbersOfAnnotations: Int = 0
-    
+    var distanceLabels: [UILabel] = []
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
         map.isZoomEnabled = false
-        map.showsUserLocation = false
+        map.showsUserLocation = true
         
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -58,22 +59,23 @@ class ViewController: UIViewController {
                             let place = CityAnnotation(city: placeMark.locality!, coordinate: coordinate)
                             
                             switch  self.numbersOfAnnotations {
-                                case 0:
-                                    place.title = "A"
                                 case 1:
-                                    place.title = "B"
+                                    place.title = "A"
                                 case 2:
+                                    place.title = "B"
+                                case 3:
                                     place.title = "C"
                                 default:
                                     place.title = ""
                             }
                             
                             // Add up to 3 Annotations on the map
-                            if self.numbersOfAnnotations <= 2 {
+                            if self.numbersOfAnnotations <= 3 {
                                 self.map.addAnnotation(place)
+                                self.numberTap += 1
                             }
                             
-                            if self.numbersOfAnnotations == 2 {
+                            if self.numbersOfAnnotations == 3 {
                                 self.addPolyline()
                                 self.addPolygon()
                             }
@@ -103,8 +105,9 @@ class ViewController: UIViewController {
         //directionButton.isHidden = false
         var myAnnotations: [CLLocationCoordinate2D] = [CLLocationCoordinate2D]()
         for mapAnnotation in map.annotations {
-    
-            myAnnotations.append(mapAnnotation.coordinate)
+            if mapAnnotation.isKind(of: CityAnnotation.self) {
+                myAnnotations.append(mapAnnotation.coordinate)
+            }
         }
         
         myAnnotations.append(myAnnotations[0])
@@ -131,25 +134,37 @@ class ViewController: UIViewController {
         
         map.addOverlay(polygon)
     }
+    
+    private func displayDistanceLocationAndMarker(nextIndex: [MKAnnotation]) -> CLLocationDistance {
+        
+
+        for (_, annotation) in nextIndex.enumerated() {
+            let distance =  getDistance(from: map.annotations[0].coordinate, to:  annotation)
+            return distance
+
+        }
+        return 0
+    }
+    
 
     private func showDistanceBetweenTwoPoint() {
         var nextIndex = 0
         
-        for index in 0...2{
-            if index == 2 {
-                nextIndex = 0
-            } else {
-                nextIndex = index + 1
+        for (index, inMapAnnotation) in map.annotations.enumerated() {
+            nextIndex += 1
+            if inMapAnnotation.title == "My Location" {
+                continue
             }
-
-            let distance: Double = getDistance(from: map.annotations[index].coordinate, to:  map.annotations[nextIndex].coordinate)
             
+            if index == 3 {
+                nextIndex = 1
+            }
+            
+            let distance: Double = getDistance(from: map.annotations[index].coordinate, to:  map.annotations[nextIndex].coordinate)
+
             let pointA: CGPoint = map.convert(map.annotations[index].coordinate, toPointTo: map)
             let pointB: CGPoint = map.convert(map.annotations[nextIndex].coordinate, toPointTo: map)
-        
-            print(pointA)
-            print(pointB)
-            /*
+            
             let labelDistance = UILabel(frame: CGRect(x: 0, y: 0, width: 50, height: 18))
 
             labelDistance.textAlignment = NSTextAlignment.center
@@ -159,12 +174,43 @@ class ViewController: UIViewController {
             labelDistance.center = CGPoint(x: (pointA.x + pointB.x) / 2, y: (pointA.y + pointB.y) / 2)
             
             distanceLabels.append(labelDistance)
-             */
         }
-        
-        /*for label in distanceLabels {
+        /*
+        for index in 1...3{
+            if index == 3 {
+                nextIndex = 1
+            } else {
+                nextIndex = index + 1
+            }
+            
+
+            //let distance: Double = getDistance(from: map.annotations[index].coordinate, to:  map.annotations[nextIndex].coordinate)
+            
+            let pointA: CGPoint = map.convert(map.annotations[index].coordinate, toPointTo: map)
+            let pointB: CGPoint = map.convert(map.annotations[nextIndex].coordinate, toPointTo: map)
+            
+            let labelDistance = UILabel(frame: CGRect(x: 0, y: 0, width: 50, height: 18))
+
+            labelDistance.textAlignment = NSTextAlignment.center
+            labelDistance.text = "\(String.init(format: "%2.f",  round(distance * 0.001))) km"
+            labelDistance.textColor = .purple
+            labelDistance.backgroundColor = .white
+            labelDistance.center = CGPoint(x: (pointA.x + pointB.x) / 2, y: (pointA.y + pointB.y) / 2)
+            
+            distanceLabels.append(labelDistance)
+             
+        }
+        */
+        for label in distanceLabels {
             map.addSubview(label)
-        }*/
+        }
+    }
+    
+    func getDistance(from: CLLocationCoordinate2D, to: MKAnnotation) -> CLLocationDistance {
+        let from = CLLocation(latitude: from.latitude, longitude: from.longitude)
+        let to = CLLocation(latitude: to.coordinate.latitude, longitude: to.coordinate.longitude)
+        
+        return from.distance(from: to)
     }
     
     func getDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> CLLocationDistance {
@@ -221,13 +267,12 @@ extension ViewController: MKMapViewDelegate {
         
         let cityAnnotation = view.annotation as! CityAnnotation
         let placeName = cityAnnotation.city
-        let placeInfo = cityAnnotation.distance
+        let placeInfo = "\(displayDistanceLocationAndMarker(nextIndex: mapView.selectedAnnotations))"
 
         let ac = UIAlertController(title: placeName, message: placeInfo, preferredStyle: .alert)
             ac.addAction(UIAlertAction(title: "OK", style: .default))
             present(ac, animated: true)
     }
-    
     
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
 
