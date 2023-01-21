@@ -56,8 +56,8 @@ class ViewController: UIViewController {
                         
                         if placeMark.locality != nil {
                             
-                            let place = CityAnnotation(city: placeMark.locality!, coordinate: coordinate)
-                            
+                            let place = CityAnnotation(city: placeMark.locality!)
+                            place.coordinate = coordinate
                             switch  self.numbersOfAnnotations {
                                 case 1:
                                     place.title = "A"
@@ -71,10 +71,6 @@ class ViewController: UIViewController {
                             
                             // Add up to 3 Annotations on the map
                             if self.numbersOfAnnotations <= 4 {
-                                
-                                if self.numberTap == 3 {
-                                    
-                                }
                                 
                                 self.map.addAnnotation(place)
                                 self.numberTap += 1
@@ -115,7 +111,6 @@ class ViewController: UIViewController {
         let region = MKCoordinateRegion(center: location, span: span)
         
         map.setRegion(region, animated: true)
-        
         
     }
     
@@ -195,11 +190,11 @@ class ViewController: UIViewController {
         
         let search = MKLocalSearch(request: searchRequest)
         search.start { (response, error) in
-                guard let coordinate = response?.mapItems[0].placemark.coordinate else {
-                    return
-                }
+            guard let coordinate = response?.mapItems[0].placemark.coordinate else {
+                return
+            }
 
-                guard let name = response?.mapItems[0].name else {
+            guard (response?.mapItems[0].name) != nil else {
                     return
                 }
 
@@ -214,46 +209,47 @@ class ViewController: UIViewController {
     @IBAction func drawRoute(sender: UIButton) {
         map.removeOverlays(map.overlays)
         remoteDistanceLabel()
-
+        
+        var excludedMyAnnotation: [MKAnnotation] = []
+        
+        for annotation  in map.annotations {
+            if annotation.title != "My Location" {
+                excludedMyAnnotation.append(annotation)
+            }
+        }
+        
+        
         var nextIndex = 0
-        for index in 0...3 {
-            if index == 3 {
-                nextIndex = 1
+        for index in 0...2 {
+            if index == 2 {
+                nextIndex = 0
             } else {
                 nextIndex = index + 1
             }
             
-            for (index, anno) in map.annotations.enumerated() {
-                print("\(index) \(anno.title)")
-            }
+            let source = MKPlacemark(coordinate: excludedMyAnnotation[index].coordinate)
+            let destination = MKPlacemark(coordinate: excludedMyAnnotation[nextIndex].coordinate)
             
-            if map.annotations[index].title != "My Location" || map.annotations[index].title != "My Location" {
-                let source = MKPlacemark(coordinate: map.annotations[index].coordinate)
-                let destination = MKPlacemark(coordinate: map.annotations[nextIndex].coordinate)
+            let directionRequest = MKDirections.Request()
+            
+            directionRequest.source = MKMapItem(placemark: source)
+            directionRequest.destination = MKMapItem(placemark: destination)
+            
+            directionRequest.transportType = .automobile
+            
+            let directions = MKDirections(request: directionRequest)
+            directions.calculate(completionHandler: { (response, error) in
+                guard let directionResponse = response else {
+                    return
+                }
                 
-                let directionRequest = MKDirections.Request()
+                let route = directionResponse.routes[0]
+                self.map.addOverlay(route.polyline, level: .aboveRoads)
                 
-                directionRequest.source = MKMapItem(placemark: source)
-                directionRequest.destination = MKMapItem(placemark: destination)
-                
-                directionRequest.transportType = .automobile
-                
-                let directions = MKDirections(request: directionRequest)
-                directions.calculate(completionHandler: { (response, error) in
-                    guard let directionResponse = response else {
-                        return
-                    }
-                    
-                    let route = directionResponse.routes[0]
-                    self.map.addOverlay(route.polyline, level: .aboveRoads)
-                    
-                    let rect = route.polyline.boundingMapRect
-                    self.map.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 100, left: 100, bottom: 100, right: 100), animated: true)
-                                    
-                })
-            } else {
-                print(map.annotations[index].title)
-            }
+                let rect = route.polyline.boundingMapRect
+                self.map.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 100, left: 100, bottom: 100, right: 100), animated: true)
+                                
+            })
             
           
         }

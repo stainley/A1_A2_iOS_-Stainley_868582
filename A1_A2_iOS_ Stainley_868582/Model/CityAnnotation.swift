@@ -8,18 +8,12 @@
 import Foundation
 import MapKit
 
-class CityAnnotation: NSObject, MKAnnotation {
-    var title: String?
+class CityAnnotation: MKPointAnnotation {
     var city: String?
     var distance: String?
-    var coordinate: CLLocationCoordinate2D
     
-    init(city: String? = nil, coordinate: CLLocationCoordinate2D) {
+    init(city: String? = nil) {
         self.city = city
-        self.coordinate = coordinate
-    }
-    
-    func setTitle(title: String) {
-        self.title = title
+        
     }
 }
