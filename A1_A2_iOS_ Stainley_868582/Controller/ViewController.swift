@@ -218,7 +218,6 @@ class ViewController: UIViewController {
             }
         }
         
-        
         var nextIndex = 0
         for index in 0...2 {
             if index == 2 {
@@ -248,12 +247,8 @@ class ViewController: UIViewController {
                 
                 let rect = route.polyline.boundingMapRect
                 self.map.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 100, left: 100, bottom: 100, right: 100), animated: true)
-                                
             })
-            
-          
         }
-                
     }
     
     func removeOverlays() {
@@ -273,17 +268,23 @@ class ViewController: UIViewController {
         distanceLabels = []
     }
     
-    private func displayDistanceLocationAndMarker(nextIndex: [MKAnnotation]) -> CLLocationDistance {
-
-        for (_, annotation) in nextIndex.enumerated() {
-            let distance =  getDistance(from: map.annotations[0].coordinate, to:  annotation)
-            return distance
-
+    private func displayDistanceLocationAndMarker(annotations: [MKAnnotation]) -> CLLocationDistance {
+        var indexCurrentLocation = 0
+        
+        for (index, annotation) in map.annotations.enumerated() {
+            if annotation.title == "My Location" {
+                indexCurrentLocation = index
+            }
         }
+        
+        for annotation in annotations {
+            let distance =  getDistance(from: map.annotations[indexCurrentLocation].coordinate, to:  annotation)
+            return distance
+        }
+      
         return 0
     }
     
-
     private func showDistanceBetweenTwoPoint() {
         var nextIndex = 0
         
@@ -348,7 +349,6 @@ extension ViewController: CLLocationManagerDelegate {
     }
 }
 
-
 extension ViewController: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -379,7 +379,7 @@ extension ViewController: MKMapViewDelegate {
         
         let cityAnnotation = view.annotation as! CityAnnotation
         let placeName = cityAnnotation.city
-        let placeInfo = "\(displayDistanceLocationAndMarker(nextIndex: mapView.selectedAnnotations))"
+        let placeInfo = "\(displayDistanceLocationAndMarker(annotations: mapView.selectedAnnotations))"
 
         let ac = UIAlertController(title: placeName, message: placeInfo, preferredStyle: .alert)
             ac.addAction(UIAlertAction(title: "OK", style: .default))
