@@ -9,7 +9,7 @@ import UIKit
 
 import MapKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UISearchBarDelegate {
     @IBOutlet weak var searchInputText: UITextField!
     @IBOutlet weak var map: MKMapView!
     var location: CLLocationManager!
@@ -201,27 +201,55 @@ class ViewController: UIViewController {
         })
     }
     
-    @IBAction func searchAddress(_ sender: UIButton) {
-     
-        let searchRequest = MKLocalSearch.Request()
-        searchRequest.naturalLanguageQuery = searchInputText.text
+    @IBAction func searchButton(_ sender: UIBarButtonItem) {
+        let searchController = UISearchController(searchResultsController: nil)
+        searchController.searchBar.delegate = self
+        present(searchController, animated: true, completion: nil)
+    
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        UIApplication.shared.beginIgnoringInteractionEvents()
         
-        let search = MKLocalSearch(request: searchRequest)
-        search.start { (response, error) in
-            guard let coordinate = response?.mapItems[0].placemark.coordinate else {
-                return
-            }
-
-            guard (response?.mapItems[0].name) != nil else {
+        let activityIndicator = UIActivityIndicatorView()
+        activityIndicator.style = .medium
+        activityIndicator.center = self.view.center
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.startAnimating()
+        
+        self.view.addSubview(activityIndicator)
+        
+        searchBar.resignFirstResponder()
+        dismiss(animated: true, completion: nil)
+        
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = searchBar.text
+        
+        let activeSearch = MKLocalSearch(request: request)
+        activeSearch.start {
+            (response, error) in
+            activityIndicator.stopAnimating()
+            UIApplication.shared.endIgnoringInteractionEvents()
+            
+            if response == nil {
+                print(error!)
+            } else {
+                
+                guard let coordinate = response?.mapItems[0].placemark.coordinate else {
                     return
                 }
-
+                
+                guard (response?.mapItems[0].name) != nil else {
+                    return
+                }
+                
                 let lat = coordinate.latitude
                 let lon = coordinate.longitude
-
+                
                 self.addMyAnnotation(coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lon))
-                self.searchInputText.text = ""
+                self.numberTap += 1
             }
+        }
     }
     
     @IBAction func drawRoute(sender: UIButton) {
